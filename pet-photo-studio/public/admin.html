@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>관리자 - 주문 목록</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #1c1216; color: #f2e9dc; padding: 24px; }
+  h1 { font-size: 18px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+  th, td { border-bottom: 1px solid #3a2b32; padding: 8px 6px; text-align: left; }
+  th { color: #c9a227; }
+  button { background: #c9a227; border: none; color: #201603; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+  .status { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #3a2b32; }
+</style>
+</head>
+<body>
+  <h1>주문 목록 (수동 입금확인용 임시 관리자 페이지)</h1>
+  <table>
+    <thead><tr><th>주문ID</th><th>입금자명</th><th>이메일</th><th>상태</th><th>생성시각</th><th>동작</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <script>
+    async function load() {
+      const res = await fetch('/admin/api/orders');
+      const { orders } = await res.json();
+      const rows = document.getElementById('rows');
+      rows.innerHTML = '';
+      orders.forEach((o) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${o.id}</td>
+          <td>${o.depositorName || '-'}</td>
+          <td>${o.email || '-'}</td>
+          <td><span class="status">${o.status}</span></td>
+          <td>${new Date(o.createdAt).toLocaleString('ko-KR')}</td>
+          <td>${o.status === 'paid' || o.status === 'generating' || o.status === 'completed' ? '' : `<button data-id="${o.id}">입금확인</button>`}</td>
+        `;
+        rows.appendChild(tr);
+      });
+      rows.querySelectorAll('button').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          await fetch(`/admin/api/orders/${btn.dataset.id}/confirm-payment`, { method: 'POST' });
+          load();
+        });
+      });
+    }
+    load();
+    setInterval(load, 5000);
+  </script>
+</body>
+</html>
