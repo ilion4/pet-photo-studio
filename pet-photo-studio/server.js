@@ -22,7 +22,8 @@ const BANK_INFO = {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const UPLOAD_DIR = path.join(__dirname, 'uploads');
+// 볼륨을 하나만 만들어도 되도록 uploads를 data 폴더 아래에 둠 (Railway Volume: /app/data 하나만 마운트하면 됨)
+const UPLOAD_DIR = path.join(__dirname, 'data', 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 const upload = multer({

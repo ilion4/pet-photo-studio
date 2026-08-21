@@ -37,9 +37,10 @@ npm start
 
 ## 배포 (Railway 기준, 사주웹앱과 동일 방식)
 
-- `data/`, `uploads/` 폴더는 `.gitignore`에 이미 포함됨 — git에 절대 커밋되면 안 됨
+- `data/` 폴더는 `.gitignore`에 이미 포함됨 — git에 절대 커밋되면 안 됨
   (커밋되면 배포할 때마다 주문 기록이 초기화되는 버그가 사주웹앱에서 있었음).
-- Railway에서 **Volume을 `/app/data`와 `/app/uploads`에 마운트**해서 영구 저장되게 할 것.
+- 업로드된 사진도 `data/uploads/` 아래에 저장되도록 구성해서, **Volume은 `/app/data` 하나만
+  마운트하면** 주문 기록과 사진이 같이 영구 저장됨.
 - 환경변수 넣은 뒤 반드시 **"Apply changes"** 버튼까지 눌러야 실제 반영됨.
 - SMTP는 Railway에서 막혀있을 수 있어서 이메일은 Resend HTTP API로 구현해둠.
 
