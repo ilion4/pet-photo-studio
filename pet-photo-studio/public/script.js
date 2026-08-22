@@ -13,7 +13,7 @@
     const el = document.createElement('div');
     el.className = 'polaroid';
     el.style.setProperty('--tilt', `${(i % 2 === 0 ? -1 : 1) * (2 + (i % 3))}deg`);
-    el.innerHTML = `<span class="clip"></span><div class="frame"><img src="${src}" alt="샘플 사진" loading="lazy" /></div>`;
+    el.innerHTML = `<span class="clip"></span><div class="frame"><img src="${src}" alt="샘플 사진" /></div>`;
     return el;
   };
   // 두 번 반복해서 넣어야 -50% translateX 애니메이션이 매끄럽게 이어짐
