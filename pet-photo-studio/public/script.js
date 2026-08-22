@@ -1,16 +1,23 @@
 (() => {
-  // ---------- 0) 빨랫줄 샘플 카드 (실제 샘플 사진은 나중에 이미지 URL로 교체) ----------
-  const SAMPLE_ICONS = ['🐶', '🐱', '🐰', '🐶', '🐹', '🐱', '🐶', '🐦'];
+  // ---------- 0) 빨랫줄 샘플 카드 - 실제 결과물 샘플 사진 13장, 매번 랜덤 순서로 ----------
+  const SAMPLE_COUNT = 13;
+  const SAMPLE_IMAGES = Array.from({ length: SAMPLE_COUNT }, (_, i) => `images/samples/sample-${i + 1}.jpg`);
+  // Fisher-Yates 셔플
+  for (let i = SAMPLE_IMAGES.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [SAMPLE_IMAGES[i], SAMPLE_IMAGES[j]] = [SAMPLE_IMAGES[j], SAMPLE_IMAGES[i]];
+  }
+
   const track = document.getElementById('clotheslineTrack');
-  const makeCard = (icon, i) => {
+  const makeCard = (src, i) => {
     const el = document.createElement('div');
     el.className = 'polaroid';
     el.style.setProperty('--tilt', `${(i % 2 === 0 ? -1 : 1) * (2 + (i % 3))}deg`);
-    el.innerHTML = `<span class="clip"></span><div class="frame">${icon}</div>`;
+    el.innerHTML = `<span class="clip"></span><div class="frame"><img src="${src}" alt="샘플 사진" loading="lazy" /></div>`;
     return el;
   };
   // 두 번 반복해서 넣어야 -50% translateX 애니메이션이 매끄럽게 이어짐
-  [...SAMPLE_ICONS, ...SAMPLE_ICONS].forEach((icon, i) => track.appendChild(makeCard(icon, i)));
+  [...SAMPLE_IMAGES, ...SAMPLE_IMAGES].forEach((src, i) => track.appendChild(makeCard(src, i)));
 
   // ---------- 상태 ----------
   let orderId = null;
