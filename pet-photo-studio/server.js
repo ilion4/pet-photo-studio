@@ -141,12 +141,29 @@ async function processOrderIfReady(orderId) {
   store.updateOrder(orderId, { status: 'generating' });
   try {
     const outDir = path.join(UPLOAD_DIR, orderId, 'results');
-    const images = await generateFiveImages({
-      personPhotoPath: order.personPhotoPath,
-      petPhotoPath: order.petPhotoPath,
-      outDir,
-    });
-    await sendResultEmail({ to: order.email, orderId, images });
+    let images;
+    try {
+      images = await generateFiveImages({
+        personPhotoPath: order.personPhotoPath,
+        petPhotoPath: order.petPhotoPath,
+        outDir,
+      });
+    } catch (e) {
+      console.error(`[processOrder] 주문 ${orderId} - 이미지 생성 단계 실패`);
+      console.error('  message:', e.message);
+      console.error('  status:', e.status);
+      console.error('  cause:', e.cause);
+      console.error('  stack:', e.stack);
+      throw e;
+    }
+    try {
+      await sendResultEmail({ to: order.email, orderId, images });
+    } catch (e) {
+      console.error(`[processOrder] 주문 ${orderId} - 이메일 발송 단계 실패`);
+      console.error('  message:', e.message);
+      console.error('  stack:', e.stack);
+      throw e;
+    }
     store.updateOrder(orderId, { status: 'completed', completedAt: new Date().toISOString() });
   } catch (e) {
     console.error(`[processOrder] 주문 ${orderId} 처리 실패:`, e.message);
