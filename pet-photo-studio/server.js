@@ -26,6 +26,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 const UPLOAD_DIR = path.join(__dirname, 'data', 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
+// 원본 파일명의 확장자는 신뢰할 수 없음(길고 이상한 이름, 확장자 없음 등) -
+// 브라우저가 실제로 보고하는 mimetype을 기준으로 확장자를 정해서 저장.
+// OpenAI 쪽에서 application/octet-stream으로 오인해 400 에러가 났던 문제의 원인.
+const MIME_TO_EXT = {
+  'image/jpeg': '.jpg',
+  'image/jpg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+};
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
@@ -33,8 +43,17 @@ const upload = multer({
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       cb(null, dir);
     },
-    filename: (req, file, cb) => cb(null, `${file.fieldname}${path.extname(file.originalname)}`),
+    filename: (req, file, cb) => {
+      const ext = MIME_TO_EXT[file.mimetype] || '.jpg';
+      cb(null, `${file.fieldname}${ext}`);
+    },
   }),
+  fileFilter: (req, file, cb) => {
+    if (!MIME_TO_EXT[file.mimetype]) {
+      return cb(new Error(`지원하지 않는 이미지 형식입니다 (${file.mimetype}). jpg, png, webp만 가능해요.`));
+    }
+    cb(null, true);
+  },
   limits: { fileSize: 15 * 1024 * 1024 }, // 15MB
 });
 
@@ -67,10 +86,12 @@ app.post('/api/orders/:orderId/depositor', (req, res) => {
 });
 
 // ---------- 2) 사진 업로드 (사람 사진 + 반려동물 사진) ----------
-app.post(
-  '/api/orders/:orderId/upload',
-  upload.fields([{ name: 'personPhoto', maxCount: 1 }, { name: 'petPhoto', maxCount: 1 }]),
-  (req, res) => {
+app.post('/api/orders/:orderId/upload', (req, res) => {
+  const handler = upload.fields([{ name: 'personPhoto', maxCount: 1 }, { name: 'petPhoto', maxCount: 1 }]);
+  handler(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || '업로드에 실패했습니다.' });
+    }
     const order = store.getOrder(req.params.orderId);
     if (!order) return res.status(404).json({ error: '주문을 찾을 수 없습니다.' });
     if (!req.files || !req.files.personPhoto || !req.files.petPhoto) {
@@ -82,8 +103,8 @@ app.post(
       status: order.status === 'pending_payment' ? 'uploaded' : order.status,
     });
     res.json({ order: updated });
-  }
-);
+  });
+});
 
 // ---------- 3) 이메일 입력 → 큐 등록 ----------
 app.post('/api/orders/:orderId/email', async (req, res) => {

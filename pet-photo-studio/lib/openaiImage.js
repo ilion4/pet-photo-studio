@@ -5,7 +5,9 @@
 // ⚠️ 공통 배경/스튜디오 묘사를 따로 분리하지 않고, 5개 프롬프트 각각에 전체 내용을 반복 삽입 (본인 지정 규칙)
 
 const fs = require('fs');
+const path = require('path');
 const OpenAI = require('openai');
+const { toFile } = require('openai/uploads');
 
 // 서버 기동 시점에는 키가 없을 수도 있으니(아직 설정 전) 여기서 바로 인스턴스화하지 않고
 // 실제 생성 호출 시점에만 만든다. (모듈 로드 시 생성하면 키 없을 때 서버 자체가 죽어버림)
@@ -53,15 +55,27 @@ const STYLE_PROMPTS = [
   },
 ];
 
+const EXT_TO_MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
+
+async function toOpenAIFile(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeType = EXT_TO_MIME[ext] || 'image/jpeg';
+  return toFile(fs.createReadStream(filePath), path.basename(filePath), { type: mimeType });
+}
+
 async function generateFiveImages({ personPhotoPath, petPhotoPath, outDir }) {
   const client = getClient();
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 
   const results = [];
   for (const style of STYLE_PROMPTS) {
+    const [personFile, petFile] = await Promise.all([
+      toOpenAIFile(personPhotoPath),
+      toOpenAIFile(petPhotoPath),
+    ]);
     const response = await client.images.edit({
       model: 'gpt-image-1',
-      image: [fs.createReadStream(personPhotoPath), fs.createReadStream(petPhotoPath)],
+      image: [personFile, petFile],
       prompt: style.prompt,
       size: '1024x1536', // 세로 인물사진 비율
       quality: 'high',
