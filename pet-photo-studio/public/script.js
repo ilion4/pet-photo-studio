@@ -45,6 +45,32 @@
 
   document.getElementById('panelClose').addEventListener('click', closeOverlay);
   document.getElementById('closeBtn').addEventListener('click', closeOverlay);
+
+  // ---------- 공유하기 (모바일: 공유 시트에서 카카오톡 선택 가능 / 데스크톱: 링크 복사) ----------
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    const shareData = {
+      title: '행복한사진관',
+      text: '반려동물과 함께 사진관에서 찍은 듯한 사진을 만들어드려요 🐾',
+      url: window.location.origin,
+    };
+    const btn = document.getElementById('shareBtn');
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (e) {
+        /* 사용자가 공유 취소한 경우 등 - 무시 */
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareData.url);
+        const original = btn.textContent;
+        btn.textContent = '링크가 복사됐어요!';
+        setTimeout(() => { btn.textContent = original; }, 2000);
+      } catch (e) {
+        alert(`아래 링크를 복사해서 공유해주세요:\n${shareData.url}`);
+      }
+    }
+  });
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
 
   // ---------- STEP 0 -> 1: 주문 생성 ----------
