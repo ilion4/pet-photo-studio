@@ -44,16 +44,45 @@
   }
 
   document.getElementById('panelClose').addEventListener('click', closeOverlay);
+  // ---------- 카카오 SDK 초기화 ----------
+  const KAKAO_JS_KEY = '422fd89fbe88f21919c79e4654078d70';
+  if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+    try { Kakao.init(KAKAO_JS_KEY); } catch (e) { console.error('[kakao] 초기화 실패', e); }
+  }
+
   document.getElementById('closeBtn').addEventListener('click', closeOverlay);
 
-  // ---------- 공유하기 (모바일: 공유 시트에서 카카오톡 선택 가능 / 데스크톱: 링크 복사) ----------
+  // ---------- 공유하기: 카카오톡 공유 카드 우선, SDK 문제 있으면 공유시트/링크복사로 대체 ----------
   document.getElementById('shareBtn').addEventListener('click', async () => {
+    const siteUrl = window.location.origin;
     const shareData = {
       title: '행복한사진관',
       text: '반려동물과 함께 사진관에서 찍은 듯한 사진을 만들어드려요 🐾',
-      url: window.location.origin,
+      url: siteUrl,
     };
     const btn = document.getElementById('shareBtn');
+
+    const kakaoReady = typeof Kakao !== 'undefined' && Kakao.isInitialized();
+    if (kakaoReady) {
+      try {
+        Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: shareData.title,
+            description: shareData.text,
+            imageUrl: `${siteUrl}/images/samples/sample-1.jpg`,
+            link: { mobileWebUrl: siteUrl, webUrl: siteUrl },
+          },
+          buttons: [
+            { title: '사진 찍으러 가기', link: { mobileWebUrl: siteUrl, webUrl: siteUrl } },
+          ],
+        });
+        return;
+      } catch (e) {
+        console.error('[kakao] 공유 실패, 대체 방식으로 전환', e);
+      }
+    }
+
     if (navigator.share) {
       try {
         await navigator.share(shareData);
