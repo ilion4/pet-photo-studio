@@ -1,4 +1,7 @@
 (() => {
+  // ---------- 방문 기록 (관리자 페이지 오늘 방문자 수 카운트용) ----------
+  fetch('/api/visit', { method: 'POST' }).catch(() => {});
+
   // ---------- 0) 빨랫줄 샘플 카드 - 실제 결과물 샘플 사진 13장, 매번 랜덤 순서로 ----------
   const SAMPLE_COUNT = 13;
   const SAMPLE_IMAGES = Array.from({ length: SAMPLE_COUNT }, (_, i) => `images/samples/sample-${i + 1}.jpg`);

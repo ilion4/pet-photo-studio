@@ -6,6 +6,7 @@ const fs = require('fs');
 const { nanoid } = require('nanoid');
 
 const store = require('./lib/store');
+const visitors = require('./lib/visitors');
 const { buildBankdaRouter } = require('./routes/bankda');
 const { generateFiveImages } = require('./lib/openaiImage');
 const { sendResultEmail } = require('./lib/email');
@@ -21,6 +22,30 @@ const BANK_INFO = {
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 별도 패키지 없이 쿠키 헤더를 간단히 파싱 (visitorId 하나만 읽으면 되므로 이 정도로 충분)
+function parseCookies(req) {
+  const header = req.headers.cookie;
+  if (!header) return {};
+  return header.split(';').reduce((acc, part) => {
+    const [k, ...v] = part.trim().split('=');
+    if (k) acc[k] = decodeURIComponent(v.join('=') || '');
+    return acc;
+  }, {});
+}
+
+// ---------- 방문자 기록: 페이지 로드 시 프론트에서 호출 ----------
+app.post('/api/visit', (req, res) => {
+  const cookies = parseCookies(req);
+  let visitorId = cookies.visitorId;
+  if (!visitorId) {
+    visitorId = nanoid(16);
+    // 1년 유지, 이 브라우저에서 오늘 이미 방문 기록했으면 다음 방문부턴 중복 카운트 안 됨
+    res.setHeader('Set-Cookie', `visitorId=${visitorId}; Max-Age=31536000; Path=/; SameSite=Lax`);
+  }
+  const count = visitors.recordVisit(visitorId);
+  res.json({ ok: true, todayCount: count });
+});
 
 // 볼륨을 하나만 만들어도 되도록 uploads를 data 폴더 아래에 둠 (Railway Volume: /app/data 하나만 마운트하면 됨)
 const UPLOAD_DIR = path.join(__dirname, 'data', 'uploads');
@@ -132,6 +157,10 @@ app.get('/api/orders/:orderId/status', (req, res) => {
 // ---------- 관리자: 주문 목록 / 수동 입금확인 (뱅크다 키 세팅 전 임시용) ----------
 app.get('/admin/api/orders', (req, res) => {
   res.json({ orders: store.listOrders() });
+});
+
+app.get('/admin/api/visitors/today', (req, res) => {
+  res.json({ date: visitors.todayKstKey(), count: visitors.getTodayCount() });
 });
 
 app.post('/admin/api/orders/:orderId/confirm-payment', async (req, res) => {
