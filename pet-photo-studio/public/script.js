@@ -62,24 +62,35 @@
     };
     const btn = document.getElementById('shareBtn');
 
-    const kakaoReady = typeof Kakao !== 'undefined' && Kakao.isInitialized();
+    const kakaoObj = typeof Kakao !== 'undefined' ? Kakao : null;
+    const kakaoReady = !!(kakaoObj && kakaoObj.isInitialized && kakaoObj.isInitialized());
+    console.log('[share] Kakao SDK 로드됨:', !!kakaoObj, '/ 초기화됨:', kakaoReady);
+
     if (kakaoReady) {
-      try {
-        Kakao.Share.sendDefault({
-          objectType: 'feed',
-          content: {
-            title: shareData.title,
-            description: shareData.text,
-            imageUrl: `${siteUrl}/images/samples/sample-1.jpg`,
-            link: { mobileWebUrl: siteUrl, webUrl: siteUrl },
-          },
-          buttons: [
-            { title: '사진 찍으러 가기', link: { mobileWebUrl: siteUrl, webUrl: siteUrl } },
-          ],
-        });
-        return;
-      } catch (e) {
-        console.error('[kakao] 공유 실패, 대체 방식으로 전환', e);
+      // SDK 버전에 따라 Share(신버전) 또는 Link(구버전) 중 있는 쪽 사용
+      const shareTarget = (kakaoObj.Share && kakaoObj.Share.sendDefault) ? kakaoObj.Share
+        : (kakaoObj.Link && kakaoObj.Link.sendDefault) ? kakaoObj.Link
+        : null;
+      console.log('[share] 사용 가능한 API:', shareTarget === kakaoObj.Share ? 'Kakao.Share' : shareTarget === kakaoObj.Link ? 'Kakao.Link' : '없음');
+
+      if (shareTarget) {
+        try {
+          shareTarget.sendDefault({
+            objectType: 'feed',
+            content: {
+              title: shareData.title,
+              description: shareData.text,
+              imageUrl: `${siteUrl}/images/samples/sample-1.jpg`,
+              link: { mobileWebUrl: siteUrl, webUrl: siteUrl },
+            },
+            buttons: [
+              { title: '사진 찍으러 가기', link: { mobileWebUrl: siteUrl, webUrl: siteUrl } },
+            ],
+          });
+          return;
+        } catch (e) {
+          console.error('[kakao] 공유 호출 실패, 대체 방식으로 전환', e);
+        }
       }
     }
 
