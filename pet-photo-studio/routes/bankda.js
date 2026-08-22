@@ -19,9 +19,11 @@
 //              orders: [{ order_id, description: "성공"|실패사유 }] }
 //      주의: 전달받은 주문번호가 "입금 전 상태(pending)"일 때만 입금확인 처리해야 함
 //
-// 참고: bank_account_no / bank_code_name(입금자 계좌번호·은행명)은 우리 결제 화면에서
-//    아예 안 받고 있어서 빈 문자열로 보냄. 매칭이 금액+입금자명만으로 잘 되는지는
-//    실제 "수동매치 테스트"로 확인 필요.
+// 참고: bank_account_no / bank_code_name은 "입금자 본인 계좌"가 아니라
+//    "우리(사업자) 쪽 수신 계좌 정보"였음 - 사주앱(gyeorun-saju) 코드에서
+//    BANK_ACCOUNT_NO, BANK_NAME 환경변수를 그대로 넣고 있는 것을 확인하고 동일하게 수정.
+//    (결제 화면에 이미 보여주는 계좌 정보를 그대로 재사용하면 됨 - 입금자에게 별도로
+//    본인 은행/계좌번호를 물어볼 필요 없음)
 
 const express = require('express');
 const store = require('../lib/store');
@@ -31,13 +33,13 @@ function formatKst(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 }
 
-function toBankdaOrder(o) {
+function toBankdaOrder(o, merchantBankInfo) {
   return {
     order_id: o.id,
     buyer_name: o.depositorName || '',
     billing_name: o.depositorName || '',
-    bank_account_no: '',
-    bank_code_name: '',
+    bank_account_no: merchantBankInfo.account,
+    bank_code_name: merchantBankInfo.bank,
     order_price_amount: o.price,
     order_date: formatKst(new Date(o.createdAt)),
     items: [{ product_name: '펫사진관 합성사진 5장' }],
@@ -46,7 +48,7 @@ function toBankdaOrder(o) {
 
 const PENDING_STATUSES = ['pending_payment', 'uploaded', 'queued'];
 
-function buildBankdaRouter(processOrderIfReady) {
+function buildBankdaRouter(processOrderIfReady, merchantBankInfo) {
   const router = express.Router();
 
   router.post('/unconfirmed-orders', (req, res) => {
@@ -54,7 +56,7 @@ function buildBankdaRouter(processOrderIfReady) {
       .listOrders()
       .filter((o) => PENDING_STATUSES.includes(o.status) && o.depositorName);
 
-    res.json({ orders: orders.map(toBankdaOrder) });
+    res.json({ orders: orders.map((o) => toBankdaOrder(o, merchantBankInfo)) });
   });
 
   router.post('/order-detail', (req, res) => {
@@ -63,7 +65,7 @@ function buildBankdaRouter(processOrderIfReady) {
     if (!order) {
       return res.status(415).json({ return_code: 415, description: '존재하지 않는 주문번호' });
     }
-    res.json({ order: toBankdaOrder(order) });
+    res.json({ order: toBankdaOrder(order, merchantBankInfo) });
   });
 
   router.put('/confirm-payment', async (req, res) => {

@@ -125,7 +125,7 @@ app.get('/admin', (req, res) => {
 });
 
 // ---------- 뱅크다 인바운드 웹훅 3종 (뱅크다가 이 서버를 호출함) ----------
-app.use('/api/bankda', buildBankdaRouter((orderId) => processOrderIfReady(orderId)));
+app.use('/api/bankda', buildBankdaRouter((orderId) => processOrderIfReady(orderId), BANK_INFO));
 
 // ---------- 입금 확인 + 사진 업로드 + 이메일 등록 3박자가 맞으면 생성 시작 ----------
 async function processOrderIfReady(orderId) {
