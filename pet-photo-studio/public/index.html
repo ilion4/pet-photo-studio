@@ -29,8 +29,9 @@
   <main class="hero">
     <p class="eyebrow">사람 사진 + 반려동물 사진 &nbsp;→&nbsp; 한 장의 가족사진</p>
     <h1 class="headline">우리 아이랑,<br>사진관에서 찍은 것처럼</h1>
-    <p class="sub">사람 사진 한 장, 반려동물 사진 한 장만 있으면 돼요.<br>
-      사진관 배경에서 함께 찍은 듯한 사진 5장을 만들어드려요.</p>
+    <p class="sub"><span class="sub-line1">사람 사진 한 장, 반려동물 사진 한 장만 있으면 돼요.</span><br>
+      사진관 배경에서 함께 찍은 듯한 사진<br>
+      5장을 만들어드려요.</p>
 
     <button class="shutter-btn" id="startBtn">
       <span class="shutter-ring"></span>
@@ -59,14 +60,20 @@
         <h2 class="panel-title">아래 계좌로 4,800원을 보내주세요</h2>
         <div class="bank-card">
           <div class="bank-row"><span>은행</span><strong id="bankName">-</strong></div>
-          <div class="bank-row"><span>계좌번호</span><strong id="bankAccount">-</strong></div>
+          <div class="bank-row">
+            <span>계좌번호</span>
+            <span class="bank-account-wrap">
+              <strong id="bankAccount">-</strong>
+              <button type="button" class="copy-btn" id="copyAccountBtn">복사</button>
+            </span>
+          </div>
           <div class="bank-row"><span>예금주</span><strong id="bankHolder">-</strong></div>
           <div class="bank-row"><span>금액</span><strong>4,800원</strong></div>
         </div>
         <label class="field-label" for="depositorName">입금자명</label>
         <input class="field-input" id="depositorName" type="text" placeholder="이체하실 때 쓰신 이름" />
         <button class="primary-btn" id="paymentNextBtn">입금했어요, 다음</button>
-        <p class="hint">입금 확인은 뱅크다 자동확인으로 처리돼요 (보통 1~10분 소요).</p>
+        <p class="hint">입금 확인은 자동으로 처리돼요.</p>
       </section>
 
       <!-- STEP 2: 사진 업로드 -->

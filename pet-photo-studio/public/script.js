@@ -129,6 +129,28 @@
     }
   });
 
+  // ---------- 계좌번호 복사 ----------
+  document.getElementById('copyAccountBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('copyAccountBtn');
+    const accountNo = document.getElementById('bankAccount').textContent.trim();
+    if (!accountNo || accountNo === '-') return;
+    try {
+      await navigator.clipboard.writeText(accountNo);
+    } catch (e) {
+      // 클립보드 API 실패 시 구식 방식으로 대체
+      const temp = document.createElement('textarea');
+      temp.value = accountNo;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+    }
+    const original = btn.textContent;
+    btn.textContent = '복사됨';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1500);
+  });
+
   // ---------- STEP 1 -> 2: 입금자명 등록 ----------
   document.getElementById('paymentNextBtn').addEventListener('click', async () => {
     const depositorName = document.getElementById('depositorName').value.trim();

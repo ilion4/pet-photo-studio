@@ -188,6 +188,11 @@ body {
   margin-bottom: 30px;
   text-shadow: 0 1px 8px rgba(0,0,0,0.45);
 }
+.sub-line1 {
+  display: inline-block;
+  white-space: nowrap;
+  font-size: clamp(11px, 3.6vw, 15px);
+}
 
 /* 셔터 버튼 */
 .shutter-btn {
@@ -303,6 +308,10 @@ body {
   line-height: 1.4;
   margin: 0 0 20px;
 }
+#step-payment .panel-title {
+  font-size: clamp(14px, 4.5vw, 21px);
+  white-space: nowrap;
+}
 
 .bank-card {
   background: var(--paper-dark);
@@ -319,6 +328,18 @@ body {
 }
 .bank-row:last-child { border-bottom: none; }
 .bank-row span { color: var(--ink-soft); }
+.bank-account-wrap { display: flex; align-items: center; gap: 8px; }
+.copy-btn {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(43,32,36,0.2);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.copy-btn.copied { background: var(--gold-soft); border-color: var(--gold); }
 
 .field-label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
 .field-input {
