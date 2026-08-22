@@ -32,6 +32,22 @@ html, body {
   overflow-x: hidden;
 }
 
+/* 전체 배경 이미지: 반려동물+주인 콜라주. 배경이 밝은 베이지 톤이라
+   와인블랙 톤의 어두운 그라데이션을 그 위에 덮어서 글자 가독성 확보 */
+body {
+  background-image:
+    linear-gradient(180deg, rgba(36, 24, 32, 0.88) 0%, rgba(36, 24, 32, 0.93) 45%, rgba(36, 24, 32, 0.97) 100%),
+    url('images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+@media (max-width: 768px) {
+  /* 모바일 background-attachment: fixed는 버벅임/스크롤 이슈가 있어 scroll로 전환 */
+  body { background-attachment: scroll; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
