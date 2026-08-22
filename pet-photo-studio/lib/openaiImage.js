@@ -6,6 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 const OpenAI = require('openai');
 const { toFile } = require('openai/uploads');
 
@@ -31,27 +32,27 @@ const STYLE_PROMPTS = [
   {
     key: 'hug',
     label: '서로 안고있는 사진',
-    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single warm family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. The person is tenderly hugging and cradling the pet close to their chest, both looking affectionate, soft genuine smile, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Vertical portrait orientation, high resolution, no text, no watermark.`,
+    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single warm family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. The person is tenderly hugging and cradling the pet close to their chest, both looking affectionate, soft genuine smile, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Horizontal orientation, wide framing with both subjects fully visible, high resolution, no text, no watermark.`,
   },
   {
     key: 'smile',
     label: '정면 보고 웃는 평범한 사진',
-    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. The person sits on the sofa holding the pet on their lap, both facing the camera directly with a natural relaxed smile, classic straightforward family portrait pose, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Vertical portrait orientation, high resolution, no text, no watermark.`,
+    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. The person sits on the sofa holding the pet on their lap, both facing the camera directly with a natural relaxed smile, classic straightforward family portrait pose, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Horizontal orientation, wide framing with both subjects fully visible, high resolution, no text, no watermark.`,
   },
   {
     key: 'cone-hat',
     label: '고깔 쓴 귀여운 사진',
-    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single playful family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. Both the person and the pet are wearing cute colorful birthday party cone hats with small pom-poms on top, both smiling brightly and looking cheerful and playful, festive and fun mood, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Vertical portrait orientation, high resolution, no text, no watermark.`,
+    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single playful family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. Both the person and the pet are wearing cute colorful birthday party cone hats with small pom-poms on top, both smiling brightly and looking cheerful and playful, festive and fun mood, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Horizontal orientation, wide framing with both subjects fully visible, high resolution, no text, no watermark.`,
   },
   {
     key: 'hanbok',
     label: '한복 입은 사진',
-    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single elegant family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. Both the person and the pet are dressed in beautiful traditional Korean hanbok with vivid jewel-toned silk fabric and elegant embroidery, sized appropriately for each (a small tailored hanbok-style outfit for the pet), both looking graceful and proud, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Vertical portrait orientation, high resolution, no text, no watermark.`,
+    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single elegant family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. Both the person and the pet are dressed in beautiful traditional Korean hanbok with vivid jewel-toned silk fabric and elegant embroidery, sized appropriately for each (a small tailored hanbok-style outfit for the pet), both looking graceful and proud, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Horizontal orientation, wide framing with both subjects fully visible, high resolution, no text, no watermark.`,
   },
   {
     key: 'military',
     label: '군복 입은 사진',
-    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. Both the person and the pet are wearing matching military-style uniforms (a small tailored uniform outfit for the pet), standing proud with a confident and endearing expression, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Vertical portrait orientation, high resolution, no text, no watermark.`,
+    prompt: `Using the two reference photos (a person's portrait photo and a pet's photo), create one photorealistic professional studio portrait that combines them into a single family portrait. The photo is taken in a warm neighborhood family photo studio with a soft gray-beige seamless backdrop, a small tufted sofa, gentle three-point studio lighting, shallow depth of field, professional portrait photography, warm and cozy atmosphere. Both the person and the pet are wearing matching military-style uniforms (a small tailored uniform outfit for the pet), standing proud with a confident and endearing expression, natural skin tones, the pet's fur and the person's face must closely match the reference photos. Horizontal orientation, wide framing with both subjects fully visible, high resolution, no text, no watermark.`,
   },
 ];
 
@@ -61,6 +62,48 @@ async function toOpenAIFile(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const mimeType = EXT_TO_MIME[ext] || 'image/jpeg';
   return toFile(fs.createReadStream(filePath), path.basename(filePath), { type: mimeType });
+}
+
+// OpenAI 이미지 API는 정해진 사이즈만 지원해서(5:4로 직접 생성 불가) 가로로 넓게
+// 생성한 다음 5:4 비율로 가운데를 정확히 잘라냄.
+async function cropTo5by4(inputBuffer) {
+  const image = sharp(inputBuffer);
+  const { width, height } = await image.metadata();
+  const targetRatio = 5 / 4;
+
+  let targetWidth = width;
+  let targetHeight = Math.round(width / targetRatio);
+  if (targetHeight > height) {
+    targetHeight = height;
+    targetWidth = Math.round(height * targetRatio);
+  }
+
+  const left = Math.round((width - targetWidth) / 2);
+  const top = Math.round((height - targetHeight) / 2);
+  return image.extract({ left, top, width: targetWidth, height: targetHeight }).toBuffer();
+}
+
+// 즉석사진(폴라로이드) 느낌의 흰 테두리 입히기.
+// 위/양옆은 얇게, 아래쪽만 살짝 더 두껍게 - AI에게 프롬프트로 시키면 삐뚤빼뚤하거나
+// 아예 무시하는 경우가 많아서, 생성된 이미지에 서버에서 직접 정확하게 합성함.
+async function addPolaroidBorder(inputBuffer) {
+  const image = sharp(inputBuffer);
+  const { width, height } = await image.metadata();
+
+  const sideBorder = Math.round(width * 0.035); // 위/양옆: 이미지 가로폭의 3.5%
+  const bottomBorder = Math.round(width * 0.09); // 아래: 조금 더 두껍게 (즉석사진 느낌)
+
+  return sharp({
+    create: {
+      width: width + sideBorder * 2,
+      height: height + sideBorder + bottomBorder,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  })
+    .composite([{ input: inputBuffer, top: sideBorder, left: sideBorder }])
+    .png()
+    .toBuffer();
 }
 
 async function generateFiveImages({ personPhotoPath, petPhotoPath, outDir }) {
@@ -77,14 +120,17 @@ async function generateFiveImages({ personPhotoPath, petPhotoPath, outDir }) {
       model: 'gpt-image-1',
       image: [personFile, petFile],
       prompt: style.prompt,
-      size: '1024x1536', // 세로 인물사진 비율
+      size: '1536x1024', // 가로로 넓게 생성 후 5:4로 크롭
       quality: 'high',
       n: 1,
     });
 
     const b64 = response.data[0].b64_json;
+    const rawBuffer = Buffer.from(b64, 'base64');
+    const croppedBuffer = await cropTo5by4(rawBuffer);
+    const framedBuffer = await addPolaroidBorder(croppedBuffer);
     const outPath = `${outDir}/${style.key}.png`;
-    fs.writeFileSync(outPath, Buffer.from(b64, 'base64'));
+    fs.writeFileSync(outPath, framedBuffer);
     results.push({ key: style.key, label: style.label, path: outPath });
   }
   return results;
