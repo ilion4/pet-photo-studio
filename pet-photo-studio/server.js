@@ -226,3 +226,28 @@ app.listen(PORT, () => {
   console.log('뱅크다 인바운드 엔드포인트: /api/bankda/unconfirmed-orders, /order-detail, /confirm-payment');
   console.log('관리자 페이지(수동 입금확인): /admin');
 });
+
+// ---------- 완료된 주문의 업로드 원본 사진 24시간 후 자동 삭제 ----------
+// (메인 페이지 "완성본 발송 후 원본 24시간 내 영구 삭제" 안내가 실제로 지켜지도록)
+const DELETE_AFTER_MS = 24 * 60 * 60 * 1000;
+
+function cleanupOldUploads() {
+  const orders = store.listOrders();
+  const now = Date.now();
+  for (const order of orders) {
+    if (order.status !== 'completed' || order.filesDeleted) continue;
+    const completedAt = order.completedAt ? new Date(order.completedAt).getTime() : null;
+    if (!completedAt || now - completedAt < DELETE_AFTER_MS) continue;
+
+    const dir = path.join(UPLOAD_DIR, order.id);
+    try {
+      if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+      store.updateOrder(order.id, { filesDeleted: true, filesDeletedAt: new Date().toISOString() });
+      console.log(`[cleanup] 주문 ${order.id} 업로드 원본 삭제 완료 (24시간 경과)`);
+    } catch (e) {
+      console.error(`[cleanup] 주문 ${order.id} 삭제 실패:`, e.message);
+    }
+  }
+}
+setInterval(cleanupOldUploads, 60 * 60 * 1000); // 1시간마다 점검
+setTimeout(cleanupOldUploads, 10 * 1000); // 서버 기동 직후 한 번 점검
