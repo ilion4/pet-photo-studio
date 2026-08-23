@@ -2,6 +2,24 @@
   // ---------- 방문 기록 (관리자 페이지 오늘 방문자 수 카운트용) ----------
   fetch('/api/visit', { method: 'POST' }).catch(() => {});
 
+  // ---------- 갤러리: 실제 결과물 샘플 12장을 매번 랜덤 순서로 ----------
+  const GALLERY_FILES = [
+    'sample-1.jpg', 'sample-2.jpg', 'sample-3.jpg', 'sample-4.jpg',
+    'sample-5.jpg', 'sample-6.jpg', 'sample-7.jpg', 'sample-8.jpg',
+    'sample-9.jpg', 'sample-13.jpg', 'sample-14.jpg', 'sample-15.jpg',
+  ];
+  // Fisher-Yates 셔플
+  for (let i = GALLERY_FILES.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [GALLERY_FILES[i], GALLERY_FILES[j]] = [GALLERY_FILES[j], GALLERY_FILES[i]];
+  }
+  const galleryGrid = document.getElementById('galleryGrid');
+  if (galleryGrid) {
+    galleryGrid.innerHTML = GALLERY_FILES.map(
+      (f) => `<div class="gallery-tile"><img src="images/samples/${f}" alt="완성 사진" loading="lazy"></div>`
+    ).join('');
+  }
+
   // ---------- 카카오 SDK 초기화 ----------
   const KAKAO_JS_KEY = '422fd89fbe88f21919c79e4654078d70';
   if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
