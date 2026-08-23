@@ -1,71 +1,97 @@
-// 뱅크다 연동 (인바운드 방식)
-// ⚠️ 처음에 "우리 서버가 뱅크다 API를 호출한다"고 잘못 짜서 다시 만든 버전.
-// 실제 구조: 뱅크다가 우리 서버의 아래 3개 엔드포인트를 주기적으로 호출한다.
+// 뱅크다 연동 (인바운드 방식) - "상점 연동 > API 연동 가이드" 문서 스펙 확정 버전
 //
-//   1) GET  /api/bankda/unconfirmed-orders   → 입금 확인이 필요한 주문 목록 반환
-//   2) POST /api/bankda/order-detail         → { order_id } 받아서 해당 주문의 금액/입금자명 반환
-//   3) POST /api/bankda/confirm-payment      → { requests: [{order_id}, ...] } 받아서 입금 확인 처리
+//   1) POST /api/bankda/unconfirmed-orders
+//      요청: 뱅크다가 body 없이(또는 빈 body로) POST 호출
+//      응답: { orders: [{ order_id, buyer_name, billing_name, bank_account_no,
+//                          bank_code_name, order_price_amount, order_date,
+//                          items: [{ product_name }] }] }
 //
-// ⚠️ 정확한 요청/응답 필드명은 뱅크다 "API 연동 가이드" 문서를 한 번 더 대조해서 맞춰야 함.
-//    아래는 상점연동 화면에 보이던 예시 요청 형식({"order_id": "주문번호"} 등)을 참고해서
-//    구성한 초안이고, 배포 후 뱅크다 관리자 화면의 "수동매치 테스트" 버튼으로
-//    실제 호출해보면서 필드명이 안 맞으면 바로 조정하면 됨.
+//   2) POST /api/bankda/order-detail
+//      요청 body: { order_id }
+//      응답: { order: { order_id, buyer_name, billing_name, bank_account_no,
+//                        bank_code_name, order_price_amount, order_date,
+//                        items: [{ product_name }] } }
+//      에러: 존재하지 않는 주문번호 -> 415
+//
+//   3) PUT /api/bankda/confirm-payment   (POST 아니라 PUT!)
+//      요청 body: { requests: [{ order_id }, ...] }
+//      응답: { return_code: 200, description: "정상",
+//              orders: [{ order_id, description: "성공"|실패사유 }] }
+//      주의: 전달받은 주문번호가 "입금 전 상태(pending)"일 때만 입금확인 처리해야 함
+//
+// 참고: bank_account_no / bank_code_name은 "입금자 본인 계좌"가 아니라
+//    "우리(사업자) 쪽 수신 계좌 정보"였음 - 사주앱(gyeorun-saju) 코드에서
+//    BANK_ACCOUNT_NO, BANK_NAME 환경변수를 그대로 넣고 있는 것을 확인하고 동일하게 수정.
+//    (결제 화면에 이미 보여주는 계좌 정보를 그대로 재사용하면 됨 - 입금자에게 별도로
+//    본인 은행/계좌번호를 물어볼 필요 없음)
 
 const express = require('express');
 const store = require('../lib/store');
 
-function buildBankdaRouter(processOrderIfReady) {
+function formatKst(date) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+function toBankdaOrder(o, merchantBankInfo) {
+  return {
+    order_id: o.id,
+    buyer_name: o.depositorName || '',
+    billing_name: o.depositorName || '',
+    bank_account_no: merchantBankInfo.account,
+    bank_code_name: merchantBankInfo.bank,
+    order_price_amount: o.price,
+    order_date: formatKst(new Date(o.createdAt)),
+    items: [{ product_name: '펫사진관 합성사진 5장' }],
+  };
+}
+
+const PENDING_STATUSES = ['pending_payment', 'uploaded', 'queued'];
+
+function buildBankdaRouter(processOrderIfReady, merchantBankInfo) {
   const router = express.Router();
 
-  // 1) 미확인 주문 리스트
-  router.get('/unconfirmed-orders', (req, res) => {
+  router.post('/unconfirmed-orders', (req, res) => {
     const orders = store
       .listOrders()
-      .filter((o) => ['pending_payment', 'uploaded', 'queued'].includes(o.status) && o.depositorName);
+      .filter((o) => PENDING_STATUSES.includes(o.status) && o.depositorName);
 
-    res.json({
-      orders: orders.map((o) => ({
-        order_id: o.id,
-        amount: o.price,
-        depositor_name: o.depositorName,
-      })),
-    });
+    res.json({ orders: orders.map((o) => toBankdaOrder(o, merchantBankInfo)) });
   });
 
-  // 2) 주문 상세
   router.post('/order-detail', (req, res) => {
     const { order_id } = req.body || {};
     const order = store.getOrder(order_id);
-    if (!order) return res.status(404).json({ error: 'NOT_FOUND', order_id });
-
-    res.json({
-      order_id: order.id,
-      amount: order.price,
-      depositor_name: order.depositorName || '',
-      status: order.status,
-    });
+    if (!order) {
+      return res.status(415).json({ return_code: 415, description: '존재하지 않는 주문번호' });
+    }
+    res.json({ order: toBankdaOrder(order, merchantBankInfo) });
   });
 
-  // 3) 입금 확인 처리 (여러 건 배치로 들어올 수 있음)
-  router.post('/confirm-payment', async (req, res) => {
+  router.put('/confirm-payment', async (req, res) => {
     const requests = (req.body && req.body.requests) || [];
     const results = [];
 
     for (const r of requests) {
       const order = store.getOrder(r.order_id);
       if (!order) {
-        results.push({ order_id: r.order_id, success: false, reason: 'NOT_FOUND' });
+        results.push({ order_id: r.order_id, description: '요청된 주문번호가 없는 경우' });
+        continue;
+      }
+      if (!PENDING_STATUSES.includes(order.status)) {
+        results.push({ order_id: r.order_id, description: '요청된 주문번호가 입금대기 상태가 아닌 경우' });
         continue;
       }
       store.updateOrder(order.id, { status: 'paid', paidAt: new Date().toISOString() });
-      results.push({ order_id: order.id, success: true });
+      results.push({ order_id: order.id, description: '성공' });
     }
 
-    res.json({ results });
+    res.json({ return_code: 200, description: '정상', orders: results });
 
-    // 응답은 먼저 보내고, 생성/발송은 비동기로 이어서 진행
     for (const r of results) {
-      if (r.success) processOrderIfReady(r.order_id).catch((e) => console.error('[bankda→processOrder]', e));
+      if (r.description === '성공') {
+        processOrderIfReady(r.order_id).catch((e) => console.error('[bankda->processOrder]', e));
+      }
     }
   });
 

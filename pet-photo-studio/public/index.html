@@ -3,117 +3,256 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>포근사진관 | 우리 가족(+반려동물) 사진</title>
+<title>행복한사진관 | 사진 2장으로 완성하는 우리 가족사진</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Song+Myung&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          serif: ['"Noto Serif KR"', 'serif'],
+          sans: ['"Noto Sans KR"', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+<script src="https://developers.kakao.com/sdk/js/kakao.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="font-sans text-neutral-900 bg-amber-50/40">
 
-  <div class="curtain curtain--left" aria-hidden="true"></div>
-  <div class="curtain curtain--right" aria-hidden="true"></div>
-
-  <header class="topbar">
-    <span class="brand">포근사진관</span>
-    <span class="brand-sub">우리 가족(+반려동물) 사진관</span>
+  <!-- ================= 헤더 ================= -->
+  <header class="sticky top-0 z-40 bg-amber-50/80 backdrop-blur border-b border-amber-100">
+    <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+      <span class="font-serif font-900 text-lg text-neutral-900">행복한사진관 🐾</span>
+      <a href="#order" class="rounded-full bg-amber-600 text-white text-sm font-bold px-4 py-2 hover:bg-amber-700 transition">지금 신청하기</a>
+    </div>
   </header>
 
-  <!-- 시그니처: 폴라로이드 빨랫줄 -->
-  <section class="clothesline-wrap" aria-hidden="true">
-    <div class="clothesline-track" id="clotheslineTrack">
-      <!-- JS가 샘플 카드를 채워넣음 (실제 샘플 사진은 추후 교체) -->
+  <!-- ================= 히어로 ================= -->
+  <section class="max-w-6xl mx-auto px-5 pt-14 pb-16 grid md:grid-cols-2 gap-12 items-center">
+    <div>
+      <span class="inline-block rounded-full bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1.5 mb-5">📸 5분 만에 완성되는 우리 가족사진</span>
+      <h1 class="font-serif font-900 text-3xl sm:text-4xl leading-[1.35] mb-5">따로 찍은 사진 2장으로<br>스튜디오 가족사진 완성</h1>
+      <p class="text-neutral-600 leading-relaxed mb-6">
+        스튜디오 예약도, 얌전한 포즈도 필요 없어요.<br>
+        갤러리에 잠들어 있는 사진 2장이면 5장의 감성 사진을 만들어드려요.
+      </p>
+      <span class="inline-block rounded-full bg-neutral-900 text-white text-sm font-bold px-4 py-2 mb-7">☕ 커피 한 잔 가격 · 4,800원</span>
+      <div>
+        <a href="#order" class="inline-flex items-center gap-2 rounded-full bg-amber-600 text-white font-bold text-base px-7 py-4 shadow-lg shadow-amber-600/20 hover:bg-amber-700 transition">
+          4,800원에 5장 신청하기 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Before & After 비주얼 -->
+    <div class="flex items-center justify-center gap-3 sm:gap-5">
+      <div class="flex flex-col gap-3">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-white shadow-md relative">
+          <img src="images/hero-person.jpg" class="w-full h-full object-cover" alt="사람 사진 예시">
+          <span class="absolute bottom-0 inset-x-0 bg-black/40 text-white text-[10px] text-center py-0.5">사람 사진</span>
+        </div>
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-white shadow-md relative">
+          <img src="images/hero-pet.jpg" class="w-full h-full object-cover" alt="반려동물 사진 예시">
+          <span class="absolute bottom-0 inset-x-0 bg-black/40 text-white text-[10px] text-center py-0.5">반려동물 사진</span>
+        </div>
+      </div>
+      <i data-lucide="arrow-right" class="w-6 h-6 text-amber-500 shrink-0"></i>
+      <div class="relative w-40 h-40 sm:w-48 sm:h-48">
+        <img src="images/samples/sample-1.jpg" class="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-xl rotate-[-8deg] border-4 border-white" alt="완성 사진 예시">
+        <img src="images/hero-result.jpg" class="absolute inset-0 w-full h-full object-cover rounded-2xl shadow-xl rotate-[6deg] border-4 border-white translate-x-4 translate-y-2" alt="완성 사진 예시">
+      </div>
     </div>
   </section>
 
-  <main class="hero">
-    <p class="eyebrow">사람 사진 + 반려동물 사진 &nbsp;→&nbsp; 한 장의 가족사진</p>
-    <h1 class="headline">우리 아이랑,<br>사진관에서 찍은 것처럼</h1>
-    <p class="sub">증명사진 한 장, 반려동물 사진 한 장만 있으면 돼요.<br>
-      사진관 배경에서 함께 안고 찍은 듯한 사진 5장을 만들어드려요.</p>
-
-    <button class="shutter-btn" id="startBtn">
-      <span class="shutter-ring"></span>
-      <span class="shutter-label">사진 찍으러 가기</span>
-    </button>
-    <p class="price-note">4,800원 · 계좌이체 · 5장 제작 · 이메일 발송</p>
-  </main>
-
-  <section class="steps" aria-hidden="true">
-    <div class="step"><span class="step-no">01</span><span class="step-txt">계좌이체</span></div>
-    <div class="step-line"></div>
-    <div class="step"><span class="step-no">02</span><span class="step-txt">사진 업로드</span></div>
-    <div class="step-line"></div>
-    <div class="step"><span class="step-no">03</span><span class="step-txt">이메일 입력</span></div>
-    <div class="step-line"></div>
-    <div class="step"><span class="step-no">04</span><span class="step-txt">제작·전송</span></div>
+  <!-- ================= 공감 & 페인포인트 ================= -->
+  <section class="bg-white py-16 border-y border-amber-100">
+    <div class="max-w-6xl mx-auto px-5">
+      <h2 class="font-serif font-900 text-2xl text-center mb-10">스튜디오 촬영, 왜 이렇게 망설여졌을까요?</h2>
+      <div class="grid sm:grid-cols-3 gap-5">
+        <div class="rounded-2xl bg-amber-50/60 p-6">
+          <div class="text-2xl mb-3">💸</div>
+          <h3 class="font-bold text-base mb-2">비용 부담 제로</h3>
+          <p class="text-sm text-neutral-600 leading-relaxed"><span class="line-through text-neutral-400">스튜디오 20~30만 원</span><br>→ <span class="font-bold text-amber-700">4,800원</span>으로 해결</p>
+        </div>
+        <div class="rounded-2xl bg-amber-50/60 p-6">
+          <div class="text-2xl mb-3">🐶</div>
+          <h3 class="font-bold text-base mb-2">스트레스 제로</h3>
+          <p class="text-sm text-neutral-600 leading-relaxed">낯선 스튜디오에서 얼어붙는 아이 대신,<br>집에서 편하게 찍은 사진을 그대로 활용</p>
+        </div>
+        <div class="rounded-2xl bg-amber-50/60 p-6">
+          <div class="text-2xl mb-3">🌈</div>
+          <h3 class="font-bold text-base mb-2">추억 보존</h3>
+          <p class="text-sm text-neutral-600 leading-relaxed">같이 찍은 사진이 없어도,<br>무지개다리를 건넌 아이도 한 프레임에</p>
+        </div>
+      </div>
+    </div>
   </section>
 
-  <!-- 플로우 패널 -->
-  <div class="overlay" id="overlay">
-    <div class="panel" id="panel">
+  <!-- ================= 갤러리 ================= -->
+  <section class="max-w-6xl mx-auto px-5 py-16">
+    <h2 class="font-serif font-900 text-2xl text-center mb-2">실제로 완성된 사진들</h2>
+    <p class="text-center text-neutral-500 text-sm mb-10">신청하신 분들이 실제로 받아보신 결과물이에요</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <img src="images/samples/sample-1.jpg" class="w-full aspect-square object-cover rounded-xl" alt="완성 사진">
+      <img src="images/samples/sample-2.jpg" class="w-full aspect-square object-cover rounded-xl" alt="완성 사진">
+      <img src="images/samples/sample-3.jpg" class="w-full aspect-square object-cover rounded-xl" alt="완성 사진">
+      <img src="images/samples/sample-4.jpg" class="w-full aspect-square object-cover rounded-xl" alt="완성 사진">
+      <img src="images/samples/sample-5.jpg" class="w-full aspect-square object-cover rounded-xl hidden sm:block" alt="완성 사진">
+      <img src="images/samples/sample-6.jpg" class="w-full aspect-square object-cover rounded-xl hidden sm:block" alt="완성 사진">
+      <img src="images/samples/sample-7.jpg" class="w-full aspect-square object-cover rounded-xl hidden sm:block" alt="완성 사진">
+      <img src="images/samples/sample-8.jpg" class="w-full aspect-square object-cover rounded-xl hidden sm:block" alt="완성 사진">
+    </div>
+  </section>
+
+  <!-- ================= 주문 폼 ================= -->
+  <section id="order" class="bg-white py-16 border-y border-amber-100 scroll-mt-16">
+    <div class="max-w-md mx-auto px-5">
+      <h2 class="font-serif font-900 text-2xl text-center mb-2">지금 바로 신청하기</h2>
+      <p class="text-center text-neutral-500 text-sm mb-8">계좌이체 · 4,800원 · 5장 제작 · 이메일 발송</p>
+
+      <!-- 스텝 인디케이터 -->
+      <div class="flex items-center justify-center gap-2 mb-8" id="stepIndicator">
+        <span class="step-dot active" data-step="1">1</span><span class="step-bar"></span>
+        <span class="step-dot" data-step="2">2</span><span class="step-bar"></span>
+        <span class="step-dot" data-step="3">3</span><span class="step-bar"></span>
+        <span class="step-dot" data-step="4">4</span>
+      </div>
 
       <!-- STEP 1: 계좌이체 -->
-      <section class="panel-step" id="step-payment" data-step="1">
-        <p class="panel-eyebrow">01 · 계좌이체</p>
-        <h2 class="panel-title">아래 계좌로 4,800원을 보내주세요</h2>
-        <div class="bank-card">
-          <div class="bank-row"><span>은행</span><strong id="bankName">-</strong></div>
-          <div class="bank-row"><span>계좌번호</span><strong id="bankAccount">-</strong></div>
-          <div class="bank-row"><span>예금주</span><strong id="bankHolder">-</strong></div>
-          <div class="bank-row"><span>금액</span><strong>4,800원</strong></div>
+      <div class="order-step" id="step-payment">
+        <h3 class="font-bold text-lg mb-4">아래 계좌로 4,800원을 보내주세요</h3>
+        <div class="rounded-2xl bg-amber-50 p-5 mb-5 space-y-3">
+          <div class="flex justify-between text-sm"><span class="text-neutral-500">은행</span><strong id="bankName">-</strong></div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-neutral-500">계좌번호</span>
+            <span class="flex items-center gap-2">
+              <strong id="bankAccount">-</strong>
+              <button type="button" id="copyAccountBtn" class="text-[11px] px-2 py-1 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50">복사</button>
+            </span>
+          </div>
+          <div class="flex justify-between text-sm"><span class="text-neutral-500">예금주</span><strong id="bankHolder">-</strong></div>
+          <div class="flex justify-between text-sm"><span class="text-neutral-500">금액</span><strong>4,800원</strong></div>
         </div>
-        <label class="field-label" for="depositorName">입금자명</label>
-        <input class="field-input" id="depositorName" type="text" placeholder="이체하실 때 쓰신 이름" />
-        <button class="primary-btn" id="paymentNextBtn">입금했어요, 다음</button>
-        <p class="hint">입금 확인은 뱅크다 자동확인으로 처리돼요 (보통 1~10분 소요).</p>
-      </section>
+        <label class="block text-sm text-neutral-500 mb-1.5">입금자명</label>
+        <input id="depositorName" type="text" placeholder="이체하실 때 쓰신 이름" class="w-full rounded-xl border border-neutral-300 px-4 py-3 mb-5 focus:outline-amber-500">
+        <button id="paymentNextBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">입금했어요, 다음</button>
+        <p class="text-center text-xs text-neutral-400 mt-3">입금 확인은 자동으로 처리돼요.</p>
+      </div>
 
-      <!-- STEP 2: 사진 업로드 -->
-      <section class="panel-step is-hidden" id="step-upload" data-step="2">
-        <p class="panel-eyebrow">02 · 사진 업로드</p>
-        <h2 class="panel-title">두 장의 사진을 올려주세요</h2>
-
-        <div class="upload-row">
-          <label class="upload-box" for="personPhoto">
-            <span class="upload-icon">🧑</span>
-            <span class="upload-label">사람 사진</span>
-            <span class="upload-desc">정면이 잘 보이는 증명사진</span>
-            <input type="file" id="personPhoto" accept="image/*" hidden />
+      <!-- STEP 2: 업로드 -->
+      <div class="order-step hidden" id="step-upload">
+        <h3 class="font-bold text-lg mb-4">두 장의 사진을 올려주세요</h3>
+        <div class="grid grid-cols-2 gap-3 mb-5">
+          <label class="dropzone" for="personPhoto">
+            <img id="personPreview" class="hidden w-full h-full object-cover rounded-xl" alt="">
+            <span class="dz-placeholder">
+              <i data-lucide="user" class="w-6 h-6 text-neutral-400 mx-auto"></i>
+              <span class="block text-xs font-bold mt-1">사람 사진</span>
+              <span class="block text-[11px] text-neutral-400">정면이 잘 보이는 사진</span>
+            </span>
+            <input type="file" id="personPhoto" accept="image/*" class="hidden">
           </label>
-          <label class="upload-box" for="petPhoto">
-            <span class="upload-icon">🐾</span>
-            <span class="upload-label">반려동물 사진</span>
-            <span class="upload-desc">얼굴이 잘 보이는 사진</span>
-            <input type="file" id="petPhoto" accept="image/*" hidden />
+          <label class="dropzone" for="petPhoto">
+            <img id="petPreview" class="hidden w-full h-full object-cover rounded-xl" alt="">
+            <span class="dz-placeholder">
+              <i data-lucide="paw-print" class="w-6 h-6 text-neutral-400 mx-auto"></i>
+              <span class="block text-xs font-bold mt-1">반려동물 사진</span>
+              <span class="block text-[11px] text-neutral-400">얼굴이 잘 보이는 사진</span>
+            </span>
+            <input type="file" id="petPhoto" accept="image/*" class="hidden">
           </label>
         </div>
-        <button class="primary-btn" id="uploadNextBtn">업로드하고 다음</button>
-      </section>
+        <button id="uploadNextBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">업로드하고 다음</button>
+      </div>
 
       <!-- STEP 3: 이메일 -->
-      <section class="panel-step is-hidden" id="step-email" data-step="3">
-        <p class="panel-eyebrow">03 · 이메일 입력</p>
-        <h2 class="panel-title">완성된 사진을 받을 이메일을 알려주세요</h2>
-        <input class="field-input" id="emailInput" type="email" placeholder="example@email.com" />
-        <button class="primary-btn" id="emailSubmitBtn">접수 완료하기</button>
-      </section>
+      <div class="order-step hidden" id="step-email">
+        <h3 class="font-bold text-lg mb-4">완성된 사진을 받을 이메일을 알려주세요</h3>
+        <input id="emailInput" type="email" placeholder="example@email.com" class="w-full rounded-xl border border-neutral-300 px-4 py-3 mb-5 focus:outline-amber-500">
+        <button id="emailSubmitBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">4,800원 신청 완료하기</button>
+      </div>
 
       <!-- STEP 4: 완료 -->
-      <section class="panel-step is-hidden" id="step-done" data-step="4">
-        <p class="panel-eyebrow">04 · 제작 · 전송</p>
-        <h2 class="panel-title">접수가 완료됐어요 🐾</h2>
-        <p class="done-msg">
-          입금 확인 후 <strong>5~10분</strong> 안에 사진관에서 사진을 만들어<br>
-          입력하신 이메일로 보내드릴게요.
-        </p>
-        <p class="done-sub" id="statusLine">입금 확인을 기다리는 중이에요…</p>
-        <button class="ghost-btn" id="closeBtn">닫기</button>
-      </section>
-
-      <button class="panel-close" id="panelClose" aria-label="닫기">✕</button>
+      <div class="order-step hidden text-center" id="step-done">
+        <div class="text-4xl mb-3">🐾</div>
+        <h3 class="font-bold text-lg mb-3">접수가 완료됐어요</h3>
+        <p class="text-sm text-neutral-600 leading-relaxed mb-2">입금 확인 후 <strong>5~10분</strong> 안에 사진관에서 사진을 만들어<br>입력하신 이메일로 보내드릴게요.</p>
+        <p class="text-xs text-amber-600 font-bold mb-6" id="statusLine">입금 확인을 기다리는 중이에요…</p>
+        <button id="shareBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition mb-2">📤 카카오톡으로 공유하기</button>
+      </div>
     </div>
-  </div>
+  </section>
 
+  <!-- ================= 좋은 사진 가이드 ================= -->
+  <section class="max-w-6xl mx-auto px-5 py-16">
+    <h2 class="font-serif font-900 text-2xl text-center mb-10">이런 사진으로 올려주세요</h2>
+    <div class="grid sm:grid-cols-2 gap-5 max-w-2xl mx-auto">
+      <div class="rounded-2xl bg-green-50 border border-green-100 p-6">
+        <div class="flex items-center gap-2 mb-3"><span class="text-xl">⭕</span><h3 class="font-bold">추천</h3></div>
+        <ul class="text-sm text-neutral-600 space-y-1.5 leading-relaxed">
+          <li>이목구비가 뚜렷하게 보이는 사진</li>
+          <li>밝고 화질이 선명한 사진</li>
+          <li>정면 또는 정면에 가까운 각도</li>
+        </ul>
+      </div>
+      <div class="rounded-2xl bg-red-50 border border-red-100 p-6">
+        <div class="flex items-center gap-2 mb-3"><span class="text-xl">❌</span><h3 class="font-bold">비추천</h3></div>
+        <ul class="text-sm text-neutral-600 space-y-1.5 leading-relaxed">
+          <li>어둡거나 흔들린 사진</li>
+          <li>얼굴이 심하게 잘린 사진</li>
+          <li>얼굴이 아주 작게 나온 사진</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 안심 보장 & FAQ ================= -->
+  <section class="bg-white py-16 border-y border-amber-100">
+    <div class="max-w-2xl mx-auto px-5">
+      <div class="flex items-center justify-center gap-2 rounded-full bg-amber-50 text-amber-700 text-sm font-bold px-5 py-2.5 mb-10 w-fit mx-auto">
+        <i data-lucide="lock" class="w-4 h-4"></i> 완성본 발송 후 업로드 원본 24시간 내 영구 삭제
+      </div>
+      <h2 class="font-serif font-900 text-2xl text-center mb-8">자주 묻는 질문</h2>
+      <div class="space-y-3">
+        <details class="faq-item">
+          <summary>제작하는 데 얼마나 걸리나요?</summary>
+          <p>입금 확인 후 보통 5~10분 안에 완성돼서 이메일로 보내드려요.</p>
+        </details>
+        <details class="faq-item">
+          <summary>강아지, 고양이 말고 다른 동물도 가능한가요?</summary>
+          <p>네, 반려동물 종류에 제한 없이 신청 가능해요.</p>
+        </details>
+        <details class="faq-item">
+          <summary>완성된 사진으로 고해상도 인화도 가능한가요?</summary>
+          <p>이메일로 보내드리는 파일 그대로 인화 가능한 해상도로 제작해드려요.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 풋터 ================= -->
+  <footer class="max-w-6xl mx-auto px-5 py-10 text-center">
+    <p class="text-[11px] text-neutral-400 leading-loose">
+      상호: 퍼스트맨 (행복한사진관) &nbsp;·&nbsp; 대표: 조형진<br>
+      사업장 소재지: 인천광역시 중구 운서2로안길 20, 306호(운서동)<br>
+      사업자등록번호: 337-27-01475 &nbsp;·&nbsp; 통신판매업신고: 제2026-인천중구-0444호<br>
+      연락처: 010-5965-1085
+    </p>
+  </footer>
+
+  <!-- ================= 모바일 하단 고정 CTA ================= -->
+  <div class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-amber-100 p-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+    <a href="#order" class="block text-center rounded-full bg-amber-600 text-white font-bold py-3.5">4,800원에 5장 신청하기 🐾</a>
+  </div>
+  <div class="md:hidden h-20"></div>
+
+  <script>if (window.lucide) lucide.createIcons();</script>
   <script src="script.js"></script>
 </body>
 </html>
