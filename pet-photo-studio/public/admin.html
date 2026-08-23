@@ -5,57 +5,33 @@
 <title>관리자 - 주문 목록</title>
 <style>
   body { font-family: -apple-system, sans-serif; background: #1c1216; color: #f2e9dc; padding: 24px; }
-  h1 { font-size: 18px; margin-bottom: 4px; }
-  .visitor-line { font-size: 13px; color: #c9a227; margin: 0 0 16px; }
+  h1 { font-size: 18px; }
   table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
   th, td { border-bottom: 1px solid #3a2b32; padding: 8px 6px; text-align: left; }
   th { color: #c9a227; }
   button { background: #c9a227; border: none; color: #201603; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
-  .status { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #3a2b32; white-space: nowrap; }
-  .status--paid, .status--generating { background: #3a4b2b; color: #cbe6a3; }
-  .status--completed { background: #2b4b3a; color: #a3e6c4; }
-  .status--failed { background: #4b2b2b; color: #e6a3a3; }
+  .status { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #3a2b32; }
 </style>
 </head>
 <body>
   <h1>주문 목록 (수동 입금확인용 임시 관리자 페이지)</h1>
-  <p class="visitor-line" id="visitorLine">오늘 방문자 수 확인 중…</p>
   <table>
     <thead><tr><th>주문ID</th><th>입금자명</th><th>이메일</th><th>상태</th><th>생성시각</th><th>동작</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
   <script>
-    // 주문 상태값을 한글로 표시 (영문 상태값은 서버 내부용, 화면엔 한글만 노출)
-    const STATUS_LABELS = {
-      pending_payment: '입금 대기',
-      uploaded: '사진 업로드됨',
-      queued: '접수 완료 (입금대기)',
-      paid: '입금 확인',
-      generating: '제작 중',
-      completed: '완료',
-      failed: '실패',
-    };
-    const STATUS_CLASS = {
-      paid: 'status--paid',
-      generating: 'status--generating',
-      completed: 'status--completed',
-      failed: 'status--failed',
-    };
-
-    async function loadOrders() {
+    async function load() {
       const res = await fetch('/admin/api/orders');
       const { orders } = await res.json();
       const rows = document.getElementById('rows');
       rows.innerHTML = '';
       orders.forEach((o) => {
         const tr = document.createElement('tr');
-        const label = STATUS_LABELS[o.status] || o.status;
-        const extraClass = STATUS_CLASS[o.status] || '';
         tr.innerHTML = `
           <td>${o.id}</td>
           <td>${o.depositorName || '-'}</td>
           <td>${o.email || '-'}</td>
-          <td><span class="status ${extraClass}">${label}</span></td>
+          <td><span class="status">${o.status}</span></td>
           <td>${new Date(o.createdAt).toLocaleString('ko-KR')}</td>
           <td>${o.status === 'paid' || o.status === 'generating' || o.status === 'completed' ? '' : `<button data-id="${o.id}">입금확인</button>`}</td>
         `;
@@ -64,27 +40,12 @@
       rows.querySelectorAll('button').forEach((btn) => {
         btn.addEventListener('click', async () => {
           await fetch(`/admin/api/orders/${btn.dataset.id}/confirm-payment`, { method: 'POST' });
-          loadOrders();
+          load();
         });
       });
     }
-
-    async function loadVisitors() {
-      try {
-        const res = await fetch('/admin/api/visitors/today');
-        const { count, date } = await res.json();
-        document.getElementById('visitorLine').textContent = `오늘(${date}) 방문자 수: ${count}명`;
-      } catch (e) {
-        document.getElementById('visitorLine').textContent = '오늘 방문자 수를 불러오지 못했어요.';
-      }
-    }
-
-    function loadAll() {
-      loadOrders();
-      loadVisitors();
-    }
-    loadAll();
-    setInterval(loadAll, 5000);
+    load();
+    setInterval(load, 5000);
   </script>
 </body>
 </html>
