@@ -37,7 +37,7 @@
     email: document.getElementById('step-email'),
     done: document.getElementById('step-done'),
   };
-  const stepOrder = ['payment', 'upload', 'email', 'done'];
+  const stepOrder = ['upload', 'email', 'payment', 'done'];
 
   function showStep(name) {
     Object.values(steps).forEach((s) => s.classList.add('hidden'));
@@ -86,20 +86,7 @@
     setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1500);
   });
 
-  // ---------- STEP 1 -> 2: 입금자명 등록 ----------
-  document.getElementById('paymentNextBtn').addEventListener('click', async () => {
-    const depositorName = document.getElementById('depositorName').value.trim();
-    if (!depositorName) { alert('입금자명을 입력해주세요.'); return; }
-    if (!orderId) { alert('잠시 후 다시 시도해주세요.'); return; }
-    await fetch(`/api/orders/${orderId}/depositor`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ depositorName }),
-    });
-    showStep('upload');
-  });
-
-  // ---------- STEP 2: 파일 선택 + 미리보기 ----------
+  // ---------- STEP 1: 파일 선택 + 미리보기 ----------
   function wireUpload(inputId, previewId, key) {
     const input = document.getElementById(inputId);
     const preview = document.getElementById(previewId);
@@ -117,12 +104,13 @@
   wireUpload('personPhoto', 'personPreview', 'personPhoto');
   wireUpload('petPhoto', 'petPreview', 'petPhoto');
 
-  // ---------- STEP 2 -> 3: 업로드 ----------
+  // ---------- STEP 1 -> 2: 업로드 ----------
   document.getElementById('uploadNextBtn').addEventListener('click', async () => {
     if (!files.personPhoto || !files.petPhoto) {
       alert('사람 사진과 반려동물 사진을 모두 선택해주세요.');
       return;
     }
+    if (!orderId) { alert('잠시 후 다시 시도해주세요.'); return; }
     const btn = document.getElementById('uploadNextBtn');
     btn.disabled = true; btn.textContent = '업로드 중…';
     try {
@@ -139,7 +127,7 @@
     }
   });
 
-  // ---------- STEP 3 -> 4: 이메일 접수 ----------
+  // ---------- STEP 2 -> 3: 이메일 접수 ----------
   document.getElementById('emailSubmitBtn').addEventListener('click', async () => {
     const email = document.getElementById('emailInput').value.trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert('올바른 이메일 주소를 입력해주세요.'); return; }
@@ -152,13 +140,47 @@
         body: JSON.stringify({ email }),
       });
       if (!res.ok) throw new Error('접수 실패');
-      showStep('done');
-      startPolling();
+      showStep('payment');
     } catch (e) {
       alert('접수에 실패했어요. 다시 시도해주세요.');
     } finally {
-      btn.disabled = false; btn.textContent = '4,800원 신청 완료하기';
+      btn.disabled = false; btn.textContent = '이메일 등록하고 다음';
     }
+  });
+
+  // ---------- 계좌번호 복사 ----------
+  document.getElementById('copyAccountBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('copyAccountBtn');
+    const accountNo = document.getElementById('bankAccount').textContent.trim();
+    if (!accountNo || accountNo === '-') return;
+    try {
+      await navigator.clipboard.writeText(accountNo);
+    } catch (e) {
+      const temp = document.createElement('textarea');
+      temp.value = accountNo;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+    }
+    const original = btn.textContent;
+    btn.textContent = '복사됨';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1500);
+  });
+
+  // ---------- STEP 3 -> 4: 입금자명 등록 ----------
+  document.getElementById('paymentNextBtn').addEventListener('click', async () => {
+    const depositorName = document.getElementById('depositorName').value.trim();
+    if (!depositorName) { alert('입금자명을 입력해주세요.'); return; }
+    if (!orderId) { alert('잠시 후 다시 시도해주세요.'); return; }
+    await fetch(`/api/orders/${orderId}/depositor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ depositorName }),
+    });
+    showStep('done');
+    startPolling();
   });
 
   // ---------- STEP 4: 상태 폴링 ----------

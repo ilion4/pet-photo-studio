@@ -115,29 +115,8 @@
         <span class="step-dot" data-step="4">4</span>
       </div>
 
-      <!-- STEP 1: 계좌이체 -->
-      <div class="order-step" id="step-payment">
-        <h3 class="font-bold text-lg mb-4">아래 계좌로 4,800원을 보내주세요</h3>
-        <div class="rounded-2xl bg-amber-50 p-5 mb-5 space-y-3">
-          <div class="flex justify-between text-sm"><span class="text-neutral-500">은행</span><strong id="bankName">-</strong></div>
-          <div class="flex justify-between items-center text-sm">
-            <span class="text-neutral-500">계좌번호</span>
-            <span class="flex items-center gap-2">
-              <strong id="bankAccount">-</strong>
-              <button type="button" id="copyAccountBtn" class="text-[11px] px-2 py-1 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50">복사</button>
-            </span>
-          </div>
-          <div class="flex justify-between text-sm"><span class="text-neutral-500">예금주</span><strong id="bankHolder">-</strong></div>
-          <div class="flex justify-between text-sm"><span class="text-neutral-500">금액</span><strong>4,800원</strong></div>
-        </div>
-        <label class="block text-sm text-neutral-500 mb-1.5">입금자명</label>
-        <input id="depositorName" type="text" placeholder="이체하실 때 쓰신 이름" class="w-full rounded-xl border border-neutral-300 px-4 py-3 mb-5 focus:outline-amber-500">
-        <button id="paymentNextBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">입금했어요, 다음</button>
-        <p class="text-center text-xs text-neutral-400 mt-3">입금 확인은 자동으로 처리돼요.</p>
-      </div>
-
-      <!-- STEP 2: 업로드 -->
-      <div class="order-step hidden" id="step-upload">
+      <!-- STEP 1: 업로드 -->
+      <div class="order-step" id="step-upload">
         <h3 class="font-bold text-lg mb-4">두 장의 사진을 올려주세요</h3>
         <div class="grid grid-cols-2 gap-3 mb-5">
           <label class="dropzone" for="personPhoto">
@@ -162,11 +141,32 @@
         <button id="uploadNextBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">업로드하고 다음</button>
       </div>
 
-      <!-- STEP 3: 이메일 -->
+      <!-- STEP 2: 이메일 -->
       <div class="order-step hidden" id="step-email">
         <h3 class="font-bold text-lg mb-4">완성된 사진을 받을 이메일을 알려주세요</h3>
         <input id="emailInput" type="email" placeholder="example@email.com" class="w-full rounded-xl border border-neutral-300 px-4 py-3 mb-5 focus:outline-amber-500">
-        <button id="emailSubmitBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">4,800원 신청 완료하기</button>
+        <button id="emailSubmitBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">이메일 등록하고 다음</button>
+      </div>
+
+      <!-- STEP 3: 계좌이체 -->
+      <div class="order-step hidden" id="step-payment">
+        <h3 class="font-bold text-lg mb-4">아래 계좌로 4,800원을 보내주세요</h3>
+        <div class="rounded-2xl bg-amber-50 p-5 mb-5 space-y-3">
+          <div class="flex justify-between text-sm"><span class="text-neutral-500">은행</span><strong id="bankName">-</strong></div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-neutral-500">계좌번호</span>
+            <span class="flex items-center gap-2">
+              <strong id="bankAccount">-</strong>
+              <button type="button" id="copyAccountBtn" class="text-[11px] px-2 py-1 rounded-md border border-neutral-300 bg-white hover:bg-neutral-50">복사</button>
+            </span>
+          </div>
+          <div class="flex justify-between text-sm"><span class="text-neutral-500">예금주</span><strong id="bankHolder">-</strong></div>
+          <div class="flex justify-between text-sm"><span class="text-neutral-500">금액</span><strong>4,800원</strong></div>
+        </div>
+        <label class="block text-sm text-neutral-500 mb-1.5">입금자명</label>
+        <input id="depositorName" type="text" placeholder="이체하실 때 쓰신 이름" class="w-full rounded-xl border border-neutral-300 px-4 py-3 mb-5 focus:outline-amber-500">
+        <button id="paymentNextBtn" class="w-full rounded-xl bg-amber-600 text-white font-bold py-3.5 hover:bg-amber-700 transition">입금했어요, 다음</button>
+        <p class="text-center text-xs text-neutral-400 mt-3">입금 확인은 자동으로 처리돼요.</p>
       </div>
 
       <!-- STEP 4: 완료 -->
