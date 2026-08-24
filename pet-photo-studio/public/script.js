@@ -1,6 +1,15 @@
 (() => {
-  // ---------- 방문 기록 (관리자 페이지 오늘 방문자 수 카운트용) ----------
-  fetch('/api/visit', { method: 'POST' }).catch(() => {});
+  // ---------- 방문 기록 + 오늘 방문자 카운터 표시 (기본값 123부터 시작, 그 위에 실제 방문자 수 누적) ----------
+  const VISITOR_BASE = 123;
+  fetch('/api/visit', { method: 'POST' })
+    .then((res) => res.json())
+    .then((data) => {
+      const el = document.getElementById('visitorCount');
+      if (el && typeof data.todayCount === 'number') {
+        el.textContent = (VISITOR_BASE + data.todayCount).toLocaleString('ko-KR');
+      }
+    })
+    .catch(() => {});
 
   // ---------- 갤러리: 실제 결과물 샘플 12장을 매번 랜덤 순서로 ----------
   const GALLERY_FILES = [
