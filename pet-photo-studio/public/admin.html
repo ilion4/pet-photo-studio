@@ -11,10 +11,12 @@
   th, td { border-bottom: 1px solid #3a2b32; padding: 8px 6px; text-align: left; }
   th { color: #c9a227; }
   button { background: #c9a227; border: none; color: #201603; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+  button:disabled { background: #3a2b32; color: #6b5a5f; cursor: not-allowed; }
   .status { padding: 2px 8px; border-radius: 10px; font-size: 11px; background: #3a2b32; white-space: nowrap; }
   .status--paid, .status--generating { background: #3a4b2b; color: #cbe6a3; }
   .status--completed { background: #2b4b3a; color: #a3e6c4; }
   .status--failed { background: #4b2b2b; color: #e6a3a3; }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -24,6 +26,11 @@
     <thead><tr><th>주문ID</th><th>입금자명</th><th>이메일</th><th>상태</th><th>생성시각</th><th>동작</th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
+  <div class="pagination">
+    <button id="prevPageBtn">이전</button>
+    <span id="pageIndicator">페이지 1 / 1</span>
+    <button id="nextPageBtn">다음</button>
+  </div>
   <script>
     // 주문 상태값을 한글로 표시 (영문 상태값은 서버 내부용, 화면엔 한글만 노출)
     const STATUS_LABELS = {
@@ -42,12 +49,21 @@
       failed: 'status--failed',
     };
 
-    async function loadOrders() {
-      const res = await fetch('/admin/api/orders');
-      const { orders } = await res.json();
+    const PAGE_SIZE = 20;
+    let currentPage = 1;
+    let allOrders = [];
+
+    function renderRows() {
+      const totalPages = Math.max(1, Math.ceil(allOrders.length / PAGE_SIZE));
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageOrders = allOrders.slice(start, start + PAGE_SIZE);
+
       const rows = document.getElementById('rows');
       rows.innerHTML = '';
-      orders.forEach((o) => {
+      pageOrders.forEach((o) => {
         const tr = document.createElement('tr');
         const label = STATUS_LABELS[o.status] || o.status;
         const extraClass = STATUS_CLASS[o.status] || '';
@@ -67,7 +83,27 @@
           loadOrders();
         });
       });
+
+      document.getElementById('pageIndicator').textContent = `페이지 ${currentPage} / ${totalPages} (총 ${allOrders.length}건)`;
+      document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+      document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
     }
+
+    async function loadOrders() {
+      const res = await fetch('/admin/api/orders');
+      const { orders } = await res.json();
+      allOrders = orders;
+      renderRows();
+    }
+
+    document.getElementById('prevPageBtn').addEventListener('click', () => {
+      currentPage -= 1;
+      renderRows();
+    });
+    document.getElementById('nextPageBtn').addEventListener('click', () => {
+      currentPage += 1;
+      renderRows();
+    });
 
     async function loadVisitors() {
       try {
